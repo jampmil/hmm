@@ -12,15 +12,20 @@ import sys
 from Hmm import Hmm
 
 class HmmCmd():
+    """
+    Class that represents manages the interaction with the user through the console as well as
+    the I/O of files for the application
     
-    #CONSTANTS FOR THE APPLICATION
+    Constants
+    ----------
+    """
     
-    #Operations
+    #Constants for the Operations
     GENSEQ_OP = 'genseq'
     VIT_OP = 'vit'
     TRAINHMM_OP = 'trainhmm'
     
-    #File Extensions
+    #Constants for the File Extensions
     TRANSITION_EXT = 'trans'
     EMISSION_EXT = 'emit'
     INPUT_EXT = 'input'
@@ -32,15 +37,16 @@ class HmmCmd():
         genseq:     Generates  a collection of observation sequences with each sequence on a line.
                     It takes two parameters: 
                         - <name>    : the name of the HMM to work with
-                        - <num_seq> : (optional) the number of sequences to generate. Default: 10
+                        - <num_seq> : (optional) the number of observation sequences to generate. 
+                                      Default: 10
                     e.g. genseq phone 12
                     This program uses the files in the folder <name>:
                         - <name>.trans : transition matrix structure
                         - <name>.emit  : emission matrix structure
-                    As a result <num_seq> number of random state sequences are shown based on the 
+                    As a result <num_seq> number of random observation sequences are shown based on the 
                     HMM structure.
-        vit:        The vit operation finds the most probable sequences of states as well as their 
-                    probability using the Viterbi algorithm.
+        vit:        The vit operation finds the most probable sequences of states based on given 
+                    observation sequences, as well as their probability, using the Viterbi algorithm.
                     It takes one parameter: 
                         - <name>    : the name of the HMM to work with
                     e.g vit phone
@@ -71,7 +77,62 @@ class HmmCmd():
         
         #Parsing arguments (the first argument is always the name of the file)
         #in case no parameters are passed
-        if len(args) == 0:
+        if len(args) <= 1:
+            ###### FAST RUN FOR TEST!!
+            folderPath = '..'
+            hmmName ='phone'
+            self.name, self.folder = hmmName, '..\\' + hmmName
+            transMatrix, pi, statesDict = self.readTransitionMatrix()
+            emissionMatrix, obsDict = self.readEmissionMatrix(statesDict)
+            
+            sequences = self.readInputSequences(obsDict)
+
+            numIter = 10
+            
+            #Create the HMM
+            hmm = Hmm(transMatrix, pi, emissionMatrix, statesDict, obsDict)
+            #hmm.printHmm()
+            
+            #Calculate the state sequences based on the observations
+            stateSequences = []
+            for seq in sequences:
+                viterbi = hmm.calculateViterbi(seq)
+                stateSequences.append(viterbi)
+            
+            print ''
+            self.printStatesSequences(sequences, stateSequences)
+            
+            
+        
+            #Train the HMM
+            hmm.calculateBaumWelch(sequences, numIter)
+            
+            
+            print 'New Pi'
+            print hmm.pi
+            print 'New trans'
+            print hmm.transMatrix
+            print 'New emi'
+            print hmm.emissionMatrix
+            
+            
+            transMatText = self.printTransitionMatrix(hmm)
+            emMatText = self.printEmissionMatrix(hmm)
+            
+            # Prints on screen as well as in the files
+            print ''
+            print 'Trained Transitions:'
+            print transMatText
+            print 'Trained Emissions:'
+            print emMatText
+            
+            
+            self.printTextInFile(folderPath + os.sep + hmmName + '_result.' + self.TRANSITION_EXT, transMatText)
+            self.printTextInFile(folderPath + os.sep + hmmName + '_result.' + self.EMISSION_EXT, emMatText)
+            
+            raise ValueError('FIN!!!')
+
+            ##########
             raise ValueError('No arguments were passed to the application. Please use the command --help for more information.')
         
         #the first parameter is always the operation
@@ -128,28 +189,28 @@ class HmmCmd():
                 #Create the HMM
                 hmm = Hmm(transMatrix, pi, emissionMatrix, statesDict, obsDict)
 
-                #Generate the sequences
+                #Generate the observation sequences
                 print ''
-                seqGen = hmm.generateSequences(num_seq)
+                seqGen = hmm.generateObservationSequences(num_seq)
                 
                 self.printObservationSequences(seqGen)
+                
             elif operation == self.VIT_OP:
                 
-                #Read the sequences in the input file
-                sequences = self.readInputSequences(obsDict)
+                #Read the observation sequences in the input file
+                obsSequences = self.readInputSequences(obsDict)
                 
                 #Create the HMM
                 hmm = Hmm(transMatrix, pi, emissionMatrix, statesDict, obsDict)
                 
-                #Calculate the state sequences based on the observations
+                #Calculate the state sequences based on the observations sequences
                 stateSequences = []
-                for obs in sequences:
-                    viterbi = hmm.calculateViterbi(obs)
+                for obSeq in obsSequences:
+                    viterbi = hmm.calculateViterbi(obSeq)
                     stateSequences.append(viterbi)
                 
                 print ''
                 self.printStatesSequences(sequences, stateSequences)
-                    
                     
             elif operation == self.TRAINHMM_OP:
                 #Convert the number of iterations
@@ -287,7 +348,7 @@ class HmmCmd():
                 line = line.strip()
                 if line != '':
                     lineVals = line.split()
-                    # Check that every observation is in the observation directory
+                    # Check that every observation is in the observation dictionary
                     for ob in lineVals:
                         if ob not in obsDict:
                             raise ValueError('Observation \'' + ob + '\' (in file \'' + self.name 
@@ -319,7 +380,7 @@ class HmmCmd():
         
         transMatText = hmm.INIT_STATE + '\n'
         orderedStates = hmm.getOrderedDictionaryKeysByValue(hmm.statesDict)
-
+        
         #Prints all the cases for the pi vector
         for i in range(len(hmm.pi)):
             if hmm.pi[i] > 0:
