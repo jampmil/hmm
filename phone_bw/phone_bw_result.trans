@@ -1,0 +1,8 @@
+INIT
+INIT	Onset	1
+Onset	Onset	0.666667
+Onset	Mid	0.333333
+Mid	Mid	0.499961
+Mid	End	0.500039
+End	End	0.666684
+End	FINAL	0.333316

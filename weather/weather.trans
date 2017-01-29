@@ -1,0 +1,7 @@
+INIT
+INIT	R	0.5
+INIT	NR	0.5
+R	NR	0.3
+NR	R	0.3
+R	R	0.7
+NR	NR	0.7
