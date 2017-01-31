@@ -208,7 +208,7 @@ class Hmm():
         """
         
         #Print the header of the training
-        print '\nTraining with Baum-Welch up to ' + str(maxIter) + ' iterations.'
+        print '\nTraining with Baum-Welch for up to ' + str(maxIter) + ' iterations, using ' + str(len(obsSequences)) + ' sequences.'
         
         #Convert the HMM matrices to numpy arrays for the algorithm
         A = np.asarray(self.transMatrix)        
