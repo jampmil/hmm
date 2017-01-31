@@ -211,7 +211,7 @@ class HmmCmd():
             elif operation == self.VIT_OP:
                 
                 #Read the observation sequences in the input file
-                obsSequences = self.readInputSequences(obsDict)
+                obsSequences = self.hmmIO.readInputSequences(obsDict)
                 
                 #Create the HMM
                 hmm = Hmm(transMatrix, pi, emissionMatrix, statesDict, obsDict)
@@ -223,7 +223,7 @@ class HmmCmd():
                     stateSequences.append(viterbi)
                 
                 print ''
-                self.printStatesSequences(sequences, stateSequences)
+                self.printStatesSequences(obsSequences, stateSequences)
                     
             elif operation == self.TRAINHMM_OP:
                 #Convert the number of iterations
@@ -234,7 +234,7 @@ class HmmCmd():
                     raise ValueError('The value for num_iter \'' + numText + '\' is not valid.')
                
                 #Read the sequences in the input file
-                sequences = self.readInputSequences(obsDict)
+                sequences = self.hmmIO.readInputSequences(obsDict)
                 
                 #Create the HMM
                 hmm = Hmm(transMatrix, pi, emissionMatrix, statesDict, obsDict)
@@ -252,8 +252,8 @@ class HmmCmd():
                 print 'Trained Emissions:'
                 print emMatText
                 
-                self.hmmIO.writeTextInFile(folderPath + os.sep + hmmName + '_result.' + self.TRANSITION_EXT, transMatText)
-                self.hmmIO.writeTextInFile(folderPath + os.sep + hmmName + '_result.' + self.EMISSION_EXT, emMatText)
+                self.hmmIO.writeTextInFile(folderPath + os.sep + hmmName + '_result.' + HmmIO.TRANSITION_EXT, transMatText)
+                self.hmmIO.writeTextInFile(folderPath + os.sep + hmmName + '_result.' + HmmIO.EMISSION_EXT, emMatText)
                 
             else:
                 raise ValueError('No valid operation was received. Use --help for help. Operation received: \'' + operation + '\'')

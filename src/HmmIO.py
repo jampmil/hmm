@@ -44,8 +44,8 @@ class HmmIO():
         
         Parameters
         ----------
-        args : array of strings
-            Arguments of the application. See the help text for more information.
+        hmmName : string
+            Name of the current HMM model
         """
         self.hmmName = hmmName
         self.folderPath = self.findModelFolder()

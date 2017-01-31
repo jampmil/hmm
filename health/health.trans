@@ -1,0 +1,9 @@
+INIT
+INIT	Healthy	0.6
+INIT	Fever	0.4
+Healthy	Healthy	0.6
+Healthy	Fever	0.3
+Healthy	FINAL	0.1
+Fever	Healthy	0.4
+Fever	Fever	0.5
+Fever	FINAL	0.1
